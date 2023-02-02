@@ -58,13 +58,13 @@ export class Store {
     this.observers = {}; // 데이터 감시
     // 객체 데이터를 for문으로 반복할때는 for-in문을 사용
     for (const key in state) {
-      //defineProperty: 객체 데이터의 어떠한 속성을 정의할때 사용하는 메소드
-      //(속성, 속성의 이름, {get데이터, set데이터})
+      // defineProperty: 객체 데이터의 어떠한 속성을 정의할때 사용하는 메소드
+      // (속성, 속성의 이름, {get데이터, set데이터})
       Object.defineProperty(this.state, key, {
         get: () => state[key], // statep['message']
         set: (val) => {
           state[key] = val;
-          this.observers[key]();
+          this.observers[key].forEach((observer) => observer(val));
         },
       });
     }
@@ -72,6 +72,9 @@ export class Store {
 
   subscribe(key, callback) {
     // 데이터를 감시할거고, 값이 변하면 함수를 실행
-    this.observers[key] = callback; // key이름이 변경되면 => set함수 실행
+    // { message: [cb1,cb2,cb3,...] }
+    Array.isArray(this.observers[key]) // 배열 데이터라면
+      ? this.observers[key].push(callback) // 콜백 함수를 마지막으로 저장
+      : (this.observers[key] = [callback]); // key이름이 변경되면 => set함수 실행
   }
 }

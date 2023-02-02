@@ -683,19 +683,24 @@ class Store {
         this.state = {}; // 받아온 데이터를 빈 객체로 초기화
         this.observers = {}; // 데이터 감시
         // 객체 데이터를 for문으로 반복할때는 for-in문을 사용
-        for(const key in state)//defineProperty: 객체 데이터의 어떠한 속성을 정의할때 사용하는 메소드
-        //(속성, 속성의 이름, {get데이터, set데이터})
+        for(const key in state)// defineProperty: 객체 데이터의 어떠한 속성을 정의할때 사용하는 메소드
+        // (속성, 속성의 이름, {get데이터, set데이터})
         Object.defineProperty(this.state, key, {
             get: ()=>state[key],
             set: (val)=>{
                 state[key] = val;
-                this.observers[key]();
+                this.observers[key].forEach((observer)=>observer(val));
             }
         });
     }
     subscribe(key, callback) {
         // 데이터를 감시할거고, 값이 변하면 함수를 실행
-        this.observers[key] = callback; // key이름이 변경되면 => set함수 실행
+        // { message: [cb1,cb2,cb3,...] }
+        Array.isArray(this.observers[key]) // 배열 데이터라면
+         ? this.observers[key].push(callback) // 콜백 함수를 마지막으로 저장
+         : this.observers[key] = [
+            callback
+        ]; // key이름이 변경되면 => set함수 실행
     }
 }
 
@@ -726,17 +731,19 @@ var _textField = require("../components/TextField");
 var _textFieldDefault = parcelHelpers.interopDefault(_textField);
 var _message = require("../components/Message");
 var _messageDefault = parcelHelpers.interopDefault(_message);
+var _title = require("../components/Title");
+var _titleDefault = parcelHelpers.interopDefault(_title);
 class Home extends (0, _modules.Component) {
     render() {
         this.el.innerHTML = /* html */ `
       <h1>Home Page!</h1>
     `;
-        this.el.append(new (0, _textFieldDefault.default)().el, new (0, _messageDefault.default)().el);
+        this.el.append(new (0, _textFieldDefault.default)().el, new (0, _messageDefault.default)().el, new (0, _titleDefault.default)().el);
     }
 }
 exports.default = Home;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../core/modules":"g0eNm","../components/TextField":"e6IWT","../components/Message":"i84kQ"}],"e6IWT":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../core/modules":"g0eNm","../components/TextField":"e6IWT","../components/Message":"i84kQ","../components/Title":"6wotK"}],"e6IWT":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _modules = require("../core/modules");
@@ -784,7 +791,28 @@ class Message extends (0, _modules.Component) {
 }
 exports.default = Message;
 
-},{"../core/modules":"g0eNm","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/message":"4gYOO"}],"gdB30":[function(require,module,exports) {
+},{"../core/modules":"g0eNm","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/message":"4gYOO"}],"6wotK":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _modules = require("../core/modules");
+var _message = require("../store/message");
+var _messageDefault = parcelHelpers.interopDefault(_message);
+class Title extends (0, _modules.Component) {
+    constructor(){
+        super({
+            tagName: "h1"
+        });
+        (0, _messageDefault.default).subscribe("message", (newVal)=>{
+            this.render();
+        });
+    }
+    render() {
+        this.el.textContent = `Title: ${(0, _messageDefault.default).state.message}`;
+    }
+}
+exports.default = Title;
+
+},{"../core/modules":"g0eNm","../store/message":"4gYOO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gdB30":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _modules = require("../core/modules");
